@@ -4,6 +4,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
+# https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html
+# 
 
 def get_column_types(df: pd.DataFrame):
     x_cols = [col for col in df.columns if col.startswith("x_")]
@@ -14,18 +16,21 @@ def get_column_types(df: pd.DataFrame):
 def make_preprocessor(df: pd.DataFrame):
     x_cols, c_cols = get_column_types(df)
 
+    # convert categoricals to string
+    df[c_cols] = df[c_cols].astype("object")
+
     numeric_pipeline = Pipeline(
         steps=[("imputer", SimpleImputer(strategy="median")),])
 
     categorical_pipeline = Pipeline(
         steps=[
-            ("fill_missing", SimpleImputer(strategy="constant", fill_value="missing")), #den her skal lige tjekkes for tror ik det er rigtigt!
             ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),])
 
     return ColumnTransformer(
         transformers=[
             ("num", numeric_pipeline, x_cols),
-            ("cat", categorical_pipeline, c_cols),])
+            ("cat", categorical_pipeline, c_cols),
+        ],verbose_feature_names_out=False) # gør bare at navnene ikke bliver random til sidst
 
 
 def preprocess_data(df: pd.DataFrame, target_col: str = "y"):
@@ -41,8 +46,8 @@ def preprocess_data(df: pd.DataFrame, target_col: str = "y"):
     return X_processed, y, preprocessor
 
 if __name__ == '__main__':
-
-    df = pd.read_csv("../data/case1Data.csv")
+    print("hello")
+    df = pd.read_csv("data/case1Data.csv")
 
     X_processed, y, preprocessor = preprocess_data(df)
 
