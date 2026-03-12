@@ -7,9 +7,10 @@ import matplotlib.pyplot as plt
 from data import preprocess_data
 
 
-data = pd.read_csv('data/case1Data.csv').values
-y = data[:, 0]
-X = data[:, 1:]
+data = pd.read_csv('data/case1Data.csv')
+data_np = data.values
+y = data_np[:, 0]
+X = data_np[:, 1:]
 
 X_train, y_train, preprocessor = preprocess_data(data)
 
@@ -22,7 +23,7 @@ alpha = 0.001
 
 coefs = np.zeros((CV, len(lambdas), p))
 
-    
+
 for i, (train_index, test_index) in enumerate(kf.split(X)):
     #ytrain = y[train_index].ravel() 
     #Xtrain = X[train_index]
@@ -35,7 +36,7 @@ for i, (train_index, test_index) in enumerate(kf.split(X)):
         with warnings.catch_warnings(): 
             warnings.simplefilter("ignore")
 
-            model = linear_model.ElasticNet(l1_ratio=alpha, alpha=lambda_, normalize=False).fit(X_train, y_train)
+            model = linear_model.ElasticNet(l1_ratio=alpha, alpha=lambda_).fit(X_train, y_train)
             coefs[i,j,:] = model.coef_
         
 trace = np.sum(coefs, axis=0)
