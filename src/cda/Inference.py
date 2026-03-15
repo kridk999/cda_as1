@@ -37,9 +37,9 @@ def inference(new_data, old_data=data):
     alpha = 0.001
 
 
-    for i, (train_index, test_index) in enumerate(kf.split(data)):
+    for i, (train_index, test_index) in enumerate(kf.split(old_data)):
 
-        df_train = data.iloc[train_index]
+        df_train = old_data.iloc[train_index]
         
         X_train, y_train, fitted_preprocessor = preprocess_data(df_train)
 
