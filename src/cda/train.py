@@ -39,6 +39,9 @@ with tqdm(total=total_iterations, desc="Tuning Hyperparameters", unit="fit") as 
         
         X_train, y_train, fitted_preprocessor = preprocess_data(df_train)
         X_val, y_val = fitted_preprocessor.transform(df_val)
+        # Ensure training data matches the baseline dimensions found in full dataset
+        X_train = X_train.reindex(columns=X_train_full.columns, fill_value=0)
+        X_val = X_val.reindex(columns=X_train_full.columns, fill_value=0)
         
         for a_idx, alpha in enumerate(alphas):
             for j, lambda_ in enumerate(lambdas):
