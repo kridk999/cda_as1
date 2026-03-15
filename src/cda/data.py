@@ -4,45 +4,73 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-# https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html
-# 
-
 def get_column_types(df: pd.DataFrame):
     x_cols = [col for col in df.columns if col.startswith("x_")]
     c_cols = [col for col in df.columns if col.startswith("C_")]
     return x_cols, c_cols
 
+class CustomPreprocessor:
+    """
+    A wrapper around ColumnTransformer that handles dataset splitting,
+    type casting, and returning pandas DataFrames for a clean interface.
+    """
+    def __init__(self, target_col="y"):
+        self.target_col = target_col
+        self.transformer = None
+        self.c_cols = []
+        
+    def fit_transform(self, df: pd.DataFrame):
 
-def make_preprocessor(df: pd.DataFrame):
-    x_cols, c_cols = get_column_types(df)
+        X = df.drop(columns=[self.target_col], errors="ignore").copy()
+        y = df[self.target_col] if self.target_col in df.columns else None
+        
 
-    # convert categoricals to string
-    df[c_cols] = df[c_cols].astype("object")
+        x_cols, self.c_cols = get_column_types(X)
 
-    numeric_pipeline = Pipeline(
-        steps=[("imputer", SimpleImputer(strategy="median")),])
+        X[self.c_cols] = X[self.c_cols].astype("object")
 
-    categorical_pipeline = Pipeline(
-        steps=[
-            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),])
+        numeric_pipeline = Pipeline(steps=[("imputer", SimpleImputer(strategy="median"))])
+        categorical_pipeline = Pipeline(steps=[("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False))])
 
-    return ColumnTransformer(
-        transformers=[
-            ("num", numeric_pipeline, x_cols),
-            ("cat", categorical_pipeline, c_cols),
-        ],verbose_feature_names_out=False) # gør bare at navnene ikke bliver random til sidst
+        self.transformer = ColumnTransformer(
+            transformers=[
+                ("num", numeric_pipeline, x_cols),
+                ("cat", categorical_pipeline, self.c_cols),
+            ],
+            verbose_feature_names_out=False
+        )
 
+        X_processed_array = self.transformer.fit_transform(X)
+ 
+        feature_names = self.transformer.get_feature_names_out()
+        X_processed = pd.DataFrame(X_processed_array, columns=feature_names, index=X.index)
+        
+        return X_processed, y
+
+    def transform(self, df: pd.DataFrame):
+        
+        X = df.drop(columns=[self.target_col], errors="ignore").copy()
+        y = df[self.target_col] if self.target_col in df.columns else None
+        
+        
+        X[self.c_cols] = X[self.c_cols].astype("object")
+        
+        
+        X_processed_array = self.transformer.transform(X)
+
+        feature_names = self.transformer.get_feature_names_out()
+        X_processed = pd.DataFrame(X_processed_array, columns=feature_names, index=X.index)
+        
+        return X_processed, y
 
 def preprocess_data(df: pd.DataFrame, target_col: str = "y"):
-    X = df.drop(columns=[target_col], errors="ignore")
-    y = df[target_col] if target_col in df.columns else None
-
-    preprocessor = make_preprocessor(X)
-    X_processed = preprocessor.fit_transform(X)
-
-    feature_names = preprocessor.get_feature_names_out()
-    X_processed = pd.DataFrame(X_processed, columns=feature_names, index=X.index)
-
+    """
+    Main entry point for training data. 
+    Initialize the custom wrapper and fit it to the dataframe.
+    """
+    preprocessor = CustomPreprocessor(target_col=target_col)
+    X_processed, y = preprocessor.fit_transform(df)
+    
     return X_processed, y, preprocessor
 
 if __name__ == '__main__':

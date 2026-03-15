@@ -39,27 +39,18 @@ for i, (train_index, test_index) in enumerate(kf.split(data)):
     df_train = data.iloc[train_index]
     df_val = data.iloc[test_index]
     
-    X_train_fold, y_train_fold, fitted_preprocessor = preprocess_data(df_train)
+    X_train, y_train, fitted_preprocessor = preprocess_data(df_train)
 
-    X_val_unprocessed = df_val.drop(columns=['y'])
-    y_val = df_val['y']
-
-    c_cols = [col for col in X_val_unprocessed.columns if col.startswith("C_")]
-    X_val_unprocessed[c_cols] = X_val_unprocessed[c_cols].astype("object")
-
-
-    X_val_processed_array = fitted_preprocessor.transform(X_val_unprocessed) 
-
-    feature_names = fitted_preprocessor.get_feature_names_out()
+    X_val, y_val = fitted_preprocessor.transform(df_val)
 
     
     for j, lambda_ in enumerate(lambdas):
         with warnings.catch_warnings(): 
             warnings.simplefilter("ignore")
 
-            model = linear_model.ElasticNet(l1_ratio=alpha, alpha=lambda_).fit(X_train_fold, y_train_fold)
+            model = linear_model.ElasticNet(l1_ratio=alpha, alpha=lambda_).fit(X_train, y_train)
             coefs[i,j,:] = model.coef_
-            preds = model.predict(X_val_processed_array)
+            preds = model.predict(X_val)
             errors[i, j] = mean_squared_error(y_val, preds)
 
 
