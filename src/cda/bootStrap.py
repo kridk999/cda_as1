@@ -22,7 +22,7 @@ def bootstrap_predictions():
     
     # Parameters based on train.py selection
     alpha_ratio = 0.001       
-    lambda_val = 0.0078   
+    lambda_val = 1.44
     
     B = 1000
     N_train = len(df_train)
