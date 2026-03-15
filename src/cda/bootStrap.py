@@ -12,15 +12,15 @@ from data import preprocess_data
 DTU_RED = '#990000'
 DTU_NAVY = '#00213E'
 
-def bootstrap_predictions(B=1000):
+def bootstrap_predictions(B=1000, alpha_ratio=1.0, lambda_val=16.2975):
     '''
     Use Bootstrap to generate predictions and confidence intervals for a test set.
     '''
     df_train = pd.read_csv('data/case1Data.csv')
     df_test = pd.read_csv('data/case1Data_Xnew.csv') 
     
-    alpha_ratio = 0.001       
-    lambda_val = 1.44
+    alpha_ratio = alpha_ratio       
+    lambda_val = lambda_val
     
     N_train = len(df_train)
     N_test = len(df_test)

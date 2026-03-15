@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.compose import ColumnTransformer
+from sklearn.discriminant_analysis import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
@@ -29,7 +30,7 @@ class CustomPreprocessor:
 
         X[self.c_cols] = X[self.c_cols].astype("object")
 
-        numeric_pipeline = Pipeline(steps=[("imputer", SimpleImputer(strategy="median"))])
+        numeric_pipeline = Pipeline(steps=[("imputer", SimpleImputer(strategy="median")),("scaler", StandardScaler())])
         categorical_pipeline = Pipeline(steps=[("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False))])
 
         self.transformer = ColumnTransformer(
@@ -62,6 +63,12 @@ class CustomPreprocessor:
         X_processed = pd.DataFrame(X_processed_array, columns=feature_names, index=X.index)
         
         return X_processed, y
+    
+    def get_feature_names_out(self):
+        """Pass through method to get feature names from the underlying transformer"""
+        if self.transformer is None:
+            raise ValueError("The transformer has not been fitted yet.")
+        return self.transformer.get_feature_names_out()
 
 def preprocess_data(df: pd.DataFrame, target_col: str = "y"):
     """
