@@ -90,7 +90,6 @@ best_alpha_coefs = coefs_grid[best_a_idx, :, :, :]
 mean_coefs = np.mean(best_alpha_coefs, axis=0)  # Shape: (lambdas, p)
 
 # --- VISUALIZATIONS ---
-
 # PLOT 1: Hyperparameter Grid Landscape (All Alphas)
 plt.figure(figsize=(10, 6))
 for a_idx, alpha in enumerate(alphas):
@@ -164,3 +163,6 @@ print(f'The auditor selects alpha = {min_alpha} and lambda = {l_1se:.4f}.')
 print('While its error is slightly higher than the minimum, it is within')
 print('one standard error, meaning the difference is likely noise.')
 print('The larger lambda results in a more parsimonious, robust model.')
+
+cv_rmse = np.sqrt(err_1se)
+print(f"Estimated Generalization RMSE (from 5-Fold CV): {cv_rmse:.4f}")
